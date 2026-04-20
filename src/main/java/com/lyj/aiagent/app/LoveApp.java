@@ -4,6 +4,7 @@ package com.lyj.aiagent.app;
 import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatModel;
 import com.lyj.aiagent.advisor.MyLoggerAdvisor;
 import com.lyj.aiagent.advisor.ReReadingAdvisor;
+import com.lyj.aiagent.chatmemory.FileBasedChatMemory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -12,6 +13,8 @@ import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY;
 import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_RETRIEVE_SIZE_KEY;
@@ -34,18 +37,37 @@ public class LoveApp {
      * @param dashscopeChatModel
      */
     public LoveApp(ChatModel dashscopeChatModel) {
-        //1.  初始化基于内存的对话记忆
-        ChatMemory chatMemory = new InMemoryChatMemory();
-        //2. 创建client
+        //基于内存的对话记忆
+        ChatMemory chatInMemory = new InMemoryChatMemory();
+        //基于文件的对话记忆，保存到目录tmp/chat-memory
+        String fileDir = System.getProperty("user.dir") + "/tmp/chat-memory";
+        ChatMemory chatFileMemory = new FileBasedChatMemory(fileDir);
+
+        //创建client
         chatClient = ChatClient.builder(dashscopeChatModel)
                 .defaultSystem(SYSTEM_PROMPT)
                 .defaultAdvisors(
-                        new MessageChatMemoryAdvisor(chatMemory),
-                        new MyLoggerAdvisor(),
-                        new ReReadingAdvisor()
+//                        new MessageChatMemoryAdvisor(chatInMemory),
+                        new MessageChatMemoryAdvisor(chatFileMemory),
+                        new MyLoggerAdvisor()
+//                        new ReReadingAdvisor()
                 )
                 .build();
     }
+
+
+    //定义恋爱报告类，包含标题和建议列表
+    /*private static class LoveReport {
+        private String title;
+        private List<String> suggestions;
+    }*/
+
+    record LoveReport(String title, List<String> suggestions) {
+
+    }
+
+
+
 
 
     /**
@@ -76,7 +98,27 @@ public class LoveApp {
 
 
 
+    /**
+     * 生成恋爱报告
+     * @param message
+     * @param chatId
+     * @return
+     */
+    public LoveReport doChatWithReport(String message, String chatId) {
 
+        //调用 chatClie nt 对象
+        LoveReport loveReport = chatClient.prompt()
+                .system(SYSTEM_PROMPT + "每次对话后都要生成恋爱结果，标题为{用户名}的恋爱报告，内容为建议列表")
+                .user(message)
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
+                .call()
+                .entity(LoveReport.class);
+
+        log.info("LoveReport: {}", loveReport);
+        return loveReport;
+
+    }
 
 
 

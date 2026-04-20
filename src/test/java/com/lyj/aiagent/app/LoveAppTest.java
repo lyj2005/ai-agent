@@ -42,6 +42,21 @@ class LoveAppTest {
     }
 
 
+/**
+ * 测试方法：用于测试带有报告功能的聊天功能
+ * 该方法会生成一个唯一的聊天ID，并执行聊天操作
+ */
+    @Test
+    void doChatWithReport() {
+        // 生成一个唯一的聊天ID，用于标识本次聊天会话
+        String chatId = UUID.randomUUID().toString();
+
+        // 定义要发送的聊天内容
+        String message = "我是lyj";
+        // 调用loveApp的doChat方法执行聊天操作
+        loveApp.doChatWithReport(message, chatId);
+
+    }
 
 
 }
