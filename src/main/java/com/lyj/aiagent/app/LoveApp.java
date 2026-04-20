@@ -5,13 +5,18 @@ import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatModel;
 import com.lyj.aiagent.advisor.MyLoggerAdvisor;
 import com.lyj.aiagent.advisor.ReReadingAdvisor;
 import com.lyj.aiagent.chatmemory.FileBasedChatMemory;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -30,6 +35,8 @@ public class LoveApp {
             "围绕单身、恋爱、已婚三种状态提问：单身状态询问社交圈拓展及追求心仪对象的困扰；" +
             "恋爱状态询问沟通、习惯差异引发的矛盾；已婚状态询问家庭责任与亲属关系处理的问题。" +
             "引导用户详述事情经过、对方反应及自身想法，以便给出专属解决方案。";
+    @Autowired
+    private Advisor loveAppRagCloudAdvisor;
 
 
     /**
@@ -68,6 +75,11 @@ public class LoveApp {
 
 
 
+    //引入向量转换
+    @Resource
+    private VectorStore loveVectorStore;
+
+
 
 
     /**
@@ -78,9 +90,8 @@ public class LoveApp {
      */
     public String doChat(String message, String chatId) {
 
-        //1. 调用 chatClie nt 对象
+        //调用 chatClie nt 对象
         ChatResponse response = chatClient
-                //2. 传入用户 Pr⁢⁢⁢ompt，并且给 advisor 指定对话 id 和⁢⁢对话⁢记忆大小
                 .prompt()
                 .user(message)
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
@@ -88,10 +99,10 @@ public class LoveApp {
                 .call()
                 .chatResponse();
 
-        //3. 得到内容
+        //解析结果
         String content = response.getResult().getOutput().getText();
         log.info("content: {}", content);
-        //4. 返回结果
+        //返回结果
         return content;
 
     }
@@ -120,6 +131,60 @@ public class LoveApp {
 
     }
 
+
+    /**
+     * 和RAG对话
+     * @param message
+     * @param chatId
+     * @return
+     */
+    public String doChatWithRAG(String message, String chatId) {
+
+        //调用 chatClie nt 对象
+        ChatResponse response = chatClient
+                .prompt()
+                .user(message)
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
+                .advisors(new QuestionAnswerAdvisor(loveVectorStore))
+                .call()
+                .chatResponse();
+
+        //解析结果
+        String content = response.getResult().getOutput().getText();
+        log.info("content: {}", content);
+        //返回结果
+        return content;
+
+    }
+
+
+
+    /**
+     * 和云RAG对话
+     * @param message
+     * @param chatId
+     * @return
+     */
+    public String doChatWithCloudRAG(String message, String chatId) {
+
+        //调用 chatClie nt 对象
+        ChatResponse response = chatClient
+                .prompt()
+                .user(message)
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
+                .advisors(loveAppRagCloudAdvisor)
+                .call()
+                .chatResponse();
+
+        //解析结果
+        String content = response.getResult().getOutput().getText();
+        log.info("content: {}", content);
+        //返回结果
+        return content;
+
+    }
 
 
 

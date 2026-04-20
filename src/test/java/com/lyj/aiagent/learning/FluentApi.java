@@ -9,8 +9,27 @@ import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvis
 public class FluentApi {
 
 
+
+
+
 /*
     public static void main(String[] args) {
+
+     //创建client
+        chatClient = ChatClient.builder(dashscopeChatModel)
+                .defaultSystem(SYSTEM_PROMPT)
+                .defaultAdvisors(
+//                        new MessageChatMemoryAdvisor(chatInMemory),
+                        new MessageChatMemoryAdvisor(chatFileMemory),
+                        new MyLoggerAdvisor()
+//                        new ReReadingAdvisor()
+                )
+                .build();
+
+
+
+
+    //使用client
         ChatResponse response = chatClient.prompt()
                 .system(SYSTEM_PROMPT + "每次对话后都要生成恋爱结果，标题为{用户名}的恋爱报告，内容为建议列表")
                 .user(message)

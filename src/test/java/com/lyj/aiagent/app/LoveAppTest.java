@@ -26,7 +26,8 @@ class LoveAppTest {
         String chatId = UUID.randomUUID().toString();
 
         //1. 第一轮
-        String message = "我是lyj";
+//        String message = "我是lyj";
+        String message = "婚后与伴侣家人产生矛盾，如何妥善解决？";
         loveApp.doChat(message, chatId);
 
        /* //2. 第二轮
@@ -56,6 +57,29 @@ class LoveAppTest {
         // 调用loveApp的doChat方法执行聊天操作
         loveApp.doChatWithReport(message, chatId);
 
+    }
+
+
+    @Test
+    void doChatWithRAG() {
+        // 生成一个唯一的聊天ID，用于标识本次聊天会话
+        String chatId = UUID.randomUUID().toString();
+
+        // 定义要发送的聊天内容
+        String message = "婚后与伴侣家人产生矛盾，如何妥善解决？";
+        // 调用loveApp的doChat方法执行聊天操作
+        loveApp.doChatWithRAG(message, chatId);
+    }
+
+    @Test
+    void doChatWithCloudRAG() {
+        // 生成一个唯一的聊天ID，用于标识本次聊天会话
+        String chatId = UUID.randomUUID().toString();
+
+        // 定义要发送的聊天内容
+        String message = "婚后与伴侣家人产生矛盾，如何妥善解决？";
+        // 调用loveApp的doChat方法执行聊天操作
+        loveApp.doChatWithCloudRAG(message, chatId);
     }
 
 

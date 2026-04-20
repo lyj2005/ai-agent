@@ -1,6 +1,7 @@
 ###  CUSTOM ###
 application-prod.yml
 TestApiKey.java
+document
 
 HELP.md
 target/
