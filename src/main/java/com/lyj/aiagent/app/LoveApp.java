@@ -5,6 +5,8 @@ import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatModel;
 import com.lyj.aiagent.advisor.MyLoggerAdvisor;
 import com.lyj.aiagent.advisor.ReReadingAdvisor;
 import com.lyj.aiagent.chatmemory.FileBasedChatMemory;
+import com.lyj.aiagent.ragplus.LoveAppRagCustomAdvisorFactory;
+import com.lyj.aiagent.ragplus.QueryRewriter;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -35,8 +37,7 @@ public class LoveApp {
             "围绕单身、恋爱、已婚三种状态提问：单身状态询问社交圈拓展及追求心仪对象的困扰；" +
             "恋爱状态询问沟通、习惯差异引发的矛盾；已婚状态询问家庭责任与亲属关系处理的问题。" +
             "引导用户详述事情经过、对方反应及自身想法，以便给出专属解决方案。";
-    @Autowired
-    private Advisor loveAppRagCloudAdvisor;
+
 
 
     /**
@@ -75,15 +76,30 @@ public class LoveApp {
 
 
 
-    //引入向量转换
+    //引入基于本地的向量存储
     @Resource
-    private VectorStore loveVectorStore;
+    private VectorStore loveAppVectorStore;
 
+
+    //引入云RAG服务
+    @Resource
+    private Advisor loveAppRagCloudAdvisor;
+
+
+    //引入基于PGvector的向量存储
+    @Resource
+    private VectorStore pgVectorVectorStore;
+
+
+
+    //引入查询重写器
+    @Resource
+    private QueryRewriter queryRewriter;
 
 
 
     /**
-     * 编写对话方法
+     * 普通对话
      * @param message
      * @param chatId
      * @return
@@ -146,7 +162,16 @@ public class LoveApp {
                 .user(message)
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
-                .advisors(new QuestionAnswerAdvisor(loveVectorStore))
+                //应用RAG知识库问答
+//                .advisors(new QuestionAnswerAdvisor(loveAppVectorStore))
+                //应用RAG检索增强服务（基于云知识库服务）
+//                .advisors(loveAppRagCloudAdvisor)
+                //应用RAG检索增强服务（基于PGVector向量存储）
+//                .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
+                //应用RAG检索增强服务（基于 RetrievalAugmentationAdvisor 查询增强顾问）
+                .advisors(LoveAppRagCustomAdvisorFactory.createLoveAppRagCustomAdvisor(
+                        loveAppVectorStore, "单身"
+                ))
                 .call()
                 .chatResponse();
 
@@ -157,24 +182,28 @@ public class LoveApp {
         return content;
 
     }
+
 
 
 
     /**
-     * 和云RAG对话
+     * 和拓展的RAG对话（添加查询重写器）
      * @param message
      * @param chatId
      * @return
      */
-    public String doChatWithCloudRAG(String message, String chatId) {
+    public String doChatWithRAGPlus(String message, String chatId) {
+
+        //重写message
+        String rewrittenMessage = queryRewriter.doQueryRewrite(message);
 
         //调用 chatClie nt 对象
         ChatResponse response = chatClient
                 .prompt()
-                .user(message)
+                .user(rewrittenMessage)
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
-                .advisors(loveAppRagCloudAdvisor)
+                .advisors(new QuestionAnswerAdvisor(loveAppVectorStore))
                 .call()
                 .chatResponse();
 
@@ -185,6 +214,9 @@ public class LoveApp {
         return content;
 
     }
+
+
+
 
 
 

@@ -40,6 +40,7 @@ public class LoveAppDocumentLoader {
 
                 //1. 得到文件名
                 String fileName = resource.getFilename();
+//                String status = fileName.substring(fileName.length()-6,fileName.length()-4);
 
 
                 //2. 引用官方文档  ，定义文档加载器
@@ -48,6 +49,7 @@ public class LoveAppDocumentLoader {
                         .withIncludeCodeBlock(false)
                         .withIncludeBlockquote(false)
                         .withAdditionalMetadata("filename", fileName)
+//                        .withAdditionalMetadata("status",status)
                         .build();
                 MarkdownDocumentReader reader = new MarkdownDocumentReader(resource, config);
 

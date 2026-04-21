@@ -3,6 +3,7 @@ package com.lyj.aiagent.app;
 import cn.hutool.core.lang.UUID;
 import com.google.errorprone.annotations.Var;
 import jakarta.annotation.Resource;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -28,7 +29,9 @@ class LoveAppTest {
         //1. 第一轮
 //        String message = "我是lyj";
         String message = "婚后与伴侣家人产生矛盾，如何妥善解决？";
-        loveApp.doChat(message, chatId);
+        String result = loveApp.doChat(message, chatId);
+        Assertions.assertNotNull(result);
+        
 
        /* //2. 第二轮
         message = "我的女朋友叫yj";
@@ -55,7 +58,8 @@ class LoveAppTest {
         // 定义要发送的聊天内容
         String message = "我是lyj";
         // 调用loveApp的doChat方法执行聊天操作
-        loveApp.doChatWithReport(message, chatId);
+        LoveApp.LoveReport loveReport = loveApp.doChatWithReport(message, chatId);
+        Assertions.assertNotNull(loveReport);
 
     }
 
@@ -68,19 +72,26 @@ class LoveAppTest {
         // 定义要发送的聊天内容
         String message = "婚后与伴侣家人产生矛盾，如何妥善解决？";
         // 调用loveApp的doChat方法执行聊天操作
-        loveApp.doChatWithRAG(message, chatId);
+        String result = loveApp.doChatWithRAG(message, chatId);
+        Assertions.assertNotNull(result);
+        
     }
 
+
+
+
     @Test
-    void doChatWithCloudRAG() {
+    void doChatWithRAGPlus() {
         // 生成一个唯一的聊天ID，用于标识本次聊天会话
         String chatId = UUID.randomUUID().toString();
 
         // 定义要发送的聊天内容
-        String message = "婚后与伴侣家人产生矛盾，如何妥善解决？";
+        String message = "我已经结婚了，婚后与伴侣家人产生矛盾，如何妥善解决？";
         // 调用loveApp的doChat方法执行聊天操作
-        loveApp.doChatWithCloudRAG(message, chatId);
+        String result = loveApp.doChatWithRAGPlus(message, chatId);
+        Assertions.assertNotNull(result);
     }
 
+    
 
 }
