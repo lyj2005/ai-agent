@@ -39,3 +39,5 @@ build/
 ### VS Code ###
 .vscode/
 !/src/test/java/com/lyj/aiagent/learning/FluentApi.java
+
+online.zip

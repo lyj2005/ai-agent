@@ -22,6 +22,9 @@ import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -277,6 +280,25 @@ public class LoveApp {
         log.info("content: {}", content);
         //返回结果
         return content;
+
+    }
+
+
+
+    /**
+     * 普通对话  --  流式返回
+     * @param message
+     * @param chatId
+     * @return
+     */
+    public Flux<String> doChatStream(String message, String chatId) {
+
+        return   chatClient.prompt()
+                .user(message)
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
+                .stream()
+                .content();
 
     }
 

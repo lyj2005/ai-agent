@@ -125,15 +125,19 @@ class LoveAppTest {
 
     @Test
     void doChatWithMCP() {
-
-        // 生成一个唯一的聊天ID，用于标识本次聊天会话
+//
+//        // 生成一个唯一的聊天ID，用于标识本次聊天会话
         String chatId = UUID.randomUUID().toString();
+//        // 定义要发送的聊天内容
+//        String message = "我的另一半居住在上海静安区，请帮我找到 5 公里内合适的约会地点";
+//        // 调用loveApp的doChat方法执行聊天操作
+//        String result = loveApp.doChatWithMCP(message, chatId);
+//        Assertions.assertNotNull(result);
 
-        // 定义要发送的聊天内容
-        String message = "我的另一半居住在上海静安区，请帮我找到 5 公里内合适的约会地点";
-        // 调用loveApp的doChat方法执行聊天操作
-        String result = loveApp.doChatWithMCP(message, chatId);
-        Assertions.assertNotNull(result);
+        String message = "帮我搜索一些哄另一半开心的图片";
+        String answer =  loveApp.doChatWithMCP(message, chatId);
+        Assertions.assertNotNull(answer);
+
     }
 
 
