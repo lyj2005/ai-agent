@@ -4,6 +4,8 @@ TestApiKey.java
 document
 tmp
 mcp-servers.json
+online.zip
+
 
 HELP.md
 target/
@@ -40,4 +42,4 @@ build/
 .vscode/
 !/src/test/java/com/lyj/aiagent/learning/FluentApi.java
 
-online.zip
+

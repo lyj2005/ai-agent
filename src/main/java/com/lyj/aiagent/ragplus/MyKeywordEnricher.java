@@ -9,9 +9,9 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * SpringAI 自动添加元信息
+ * 基于 AI 的文档元信息增强器。SpringAI 自动添加元信息
  */
-@Component
+//@Component
 public class MyKeywordEnricher {
 
 

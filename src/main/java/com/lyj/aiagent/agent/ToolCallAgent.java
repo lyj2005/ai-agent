@@ -40,15 +40,17 @@ public class ToolCallAgent extends ReActAgent {
   
     // 禁用内置的工具调用机制，自己维护上下文  
     private final ChatOptions chatOptions;
-  
-    public ToolCallAgent(ToolCallback[] availableTools) {  
-        super();  
-        this.availableTools = availableTools;  
-        this.toolCallingManager = ToolCallingManager.builder().build();  
-        // 禁用 Spring AI 内置的工具调用机制，自己维护选项和消息上下文  
+
+
+
+    public ToolCallAgent(ToolCallback[] availableTools) {
+        super();
+        this.availableTools = availableTools;
+        this.toolCallingManager = ToolCallingManager.builder().build();
+        // 禁用 Spring AI 内置的工具调用机制，自己维护选项和消息上下文
         this.chatOptions = DashScopeChatOptions.builder()
-                .withProxyToolCalls(true)  
-                .build();  
+                .withProxyToolCalls(true)
+                .build();
     }
 
 
@@ -61,12 +63,19 @@ public class ToolCallAgent extends ReActAgent {
      */
     @Override
     public boolean think() {
+
+        // 1.校验提示词，拼接用户提示词
         if (getNextStepPrompt() != null && !getNextStepPrompt().isEmpty()) {
             UserMessage userMessage = new UserMessage(getNextStepPrompt());
             getMessageList().add(userMessage);
         }
+
+
+
+        // 2.调用 AI 大模型，获取工具调用结果
         List<Message> messageList = getMessageList();
         Prompt prompt = new Prompt(messageList, chatOptions);
+
         try {
             // 获取带工具选项的响应
             ChatResponse chatResponse = getChatClient().prompt(prompt)
@@ -76,10 +85,14 @@ public class ToolCallAgent extends ReActAgent {
                     .chatResponse();
             // 记录响应，用于 Act
             this.toolCallChatResponse = chatResponse;
+
+            // 3.解析工具调用结果，获取要调用的工具
+            // 助手消息
             AssistantMessage assistantMessage = chatResponse.getResult().getOutput();
+            // 获取要调用的工具列表
+            List<AssistantMessage.ToolCall> toolCallList = assistantMessage.getToolCalls();
             // 输出提示信息
             String result = assistantMessage.getText();
-            List<AssistantMessage.ToolCall> toolCallList = assistantMessage.getToolCalls();
             log.info(getName() + "的思考: " + result);
             log.info(getName() + "选择了 " + toolCallList.size() + " 个工具来使用");
             String toolCallInfo = toolCallList.stream()
@@ -89,6 +102,8 @@ public class ToolCallAgent extends ReActAgent {
                     )
                     .collect(Collectors.joining("\n"));
             log.info(toolCallInfo);
+
+            // 如果不需要调用工具，返回 false
             if (toolCallList.isEmpty()) {
                 // 只有不调用工具时，才记录助手消息
                 getMessageList().add(assistantMessage);
@@ -97,6 +112,8 @@ public class ToolCallAgent extends ReActAgent {
                 // 需要调用工具时，无需记录助手消息，因为调用工具时会自动记录
                 return true;
             }
+
+
         } catch (Exception e) {
             log.error(getName() + "的思考过程遇到了问题: " + e.getMessage());
             getMessageList().add(
@@ -104,6 +121,9 @@ public class ToolCallAgent extends ReActAgent {
             return false;
         }
     }
+
+
+
 
 
 
@@ -134,6 +154,9 @@ public class ToolCallAgent extends ReActAgent {
 
 
 
+
+
+
     @Override
     public String act() {
         if (!toolCallChatResponse.hasToolCalls()) {
@@ -144,17 +167,16 @@ public class ToolCallAgent extends ReActAgent {
         ToolExecutionResult toolExecutionResult = toolCallingManager.executeToolCalls(prompt, toolCallChatResponse);
         // 记录消息上下文，conversationHistory 已经包含了助手消息和工具调用返回的结果
         setMessageList(toolExecutionResult.conversationHistory());
-        // 当前工具调用的结果
         ToolResponseMessage toolResponseMessage = (ToolResponseMessage) CollUtil.getLast(toolExecutionResult.conversationHistory());
-        String results = toolResponseMessage.getResponses().stream()
-                .map(response -> "工具 " + response.name() + " 完成了它的任务！结果: " + response.responseData())
-                .collect(Collectors.joining("\n"));
         // 判断是否调用了终止工具
         boolean terminateToolCalled = toolResponseMessage.getResponses().stream()
                 .anyMatch(response -> "doTerminate".equals(response.name()));
         if (terminateToolCalled) {
             setState(AgentState.FINISHED);
         }
+        String results = toolResponseMessage.getResponses().stream()
+                .map(response -> "工具 " + response.name() + " 完成了它的任务！结果: " + response.responseData())
+                .collect(Collectors.joining("\n"));
         log.info(results);
         return results;
     }

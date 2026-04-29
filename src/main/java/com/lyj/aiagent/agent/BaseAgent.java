@@ -20,12 +20,15 @@ import java.util.concurrent.CompletableFuture;
  * 子类必须实现step方法。  
  */  
 
- 
 @Data
 @Slf4j
 public abstract class BaseAgent {  
-  
-    // 核心属性  
+
+
+
+    // 核心属性
+
+    // 代理名称
     private String name;  
   
     // 提示  
@@ -56,7 +59,9 @@ public abstract class BaseAgent {
      * @param userPrompt 用户提示词  
      * @return 执行结果  
      */  
-    public String run(String userPrompt) {  
+    public String run(String userPrompt) {
+
+        //1. 基础校验
         if (this.state != AgentState.IDLE) {  
             throw new RuntimeException("Cannot run agent from state: " + this.state);  
         }  
@@ -64,8 +69,11 @@ public abstract class BaseAgent {
             throw new RuntimeException("Cannot run agent with empty user prompt");  
         }  
 
+
         
-        // 更改状态  
+        //2. 执行
+
+        // 更改状态
         state = AgentState.RUNNING;  
         // 记录消息上下文  
         messageList.add(new UserMessage(userPrompt));
@@ -73,7 +81,9 @@ public abstract class BaseAgent {
         List<String> results = new ArrayList<>();  
         
         
-        try {  
+        try {
+
+            //执行循环
             for (int i = 0; i < maxSteps && state != AgentState.FINISHED; i++) {  
                 int stepNumber = i + 1;  
                 currentStep = stepNumber;  
@@ -89,34 +99,25 @@ public abstract class BaseAgent {
             if (currentStep >= maxSteps) {  
                 state = AgentState.FINISHED;  
                 results.add("Terminated: Reached max steps (" + maxSteps + ")");  
-            }  
+            }
+
+            //返回结果
             return String.join("\n", results);  
-        } catch (Exception e) {  
+
+        } catch (Exception e) {
             state = AgentState.ERROR;  
             log.error("Error executing agent", e);  
             return "执行错误" + e.getMessage();  
         } finally {  
-            // 清理资源  
+            //3. 清理资源
             this.cleanup();  
-        }  
-    }  
-  
+        }
 
-    
-    
-    /**  
-     * 执行单个步骤  
-     *  
-     * @return 步骤执行结果  
-     */  
-    public abstract String step();  
-  
-    /**  
-     * 清理资源  
-     */  
-    protected void cleanup() {  
-        // 子类可以重写此方法来清理资源  
-    }
+
+
+    }  
+
+
 
 
 
@@ -134,6 +135,8 @@ public abstract class BaseAgent {
         // 使用线程异步处理，避免阻塞主线程
         CompletableFuture.runAsync(() -> {
             try {
+                
+                //1. 基础校验
                 if (this.state != AgentState.IDLE) {
                     emitter.send("错误：无法从状态运行代理: " + this.state);
                     emitter.complete();
@@ -145,7 +148,7 @@ public abstract class BaseAgent {
                     return;
                 }
 
-                // 更改状态
+                //2. 执行， 更改状态
                 state = AgentState.RUNNING;
                 // 记录消息上下文
                 messageList.add(new UserMessage(userPrompt));
@@ -180,7 +183,7 @@ public abstract class BaseAgent {
                         emitter.completeWithError(ex);
                     }
                 } finally {
-                    // 清理资源
+                    //3.  清理资源
                     this.cleanup();
                 }
             } catch (Exception e) {
@@ -188,13 +191,14 @@ public abstract class BaseAgent {
             }
         });
 
-        // 设置超时和完成回调
+        // 设置超时回调
         emitter.onTimeout(() -> {
             this.state = AgentState.ERROR;
             this.cleanup();
             log.warn("SSE connection timed out");
         });
 
+        //设置完成回调
         emitter.onCompletion(() -> {
             if (this.state == AgentState.RUNNING) {
                 this.state = AgentState.FINISHED;
@@ -204,6 +208,28 @@ public abstract class BaseAgent {
         });
 
         return emitter;
+    }
+
+
+
+
+
+
+    /**
+     * 执行单个步骤
+     *
+     * @return 步骤执行结果
+     */
+    public abstract String step();
+
+
+
+
+    /**
+     * 清理资源
+     */
+    protected void cleanup() {
+        // 子类可以重写此方法来清理资源
     }
 
 

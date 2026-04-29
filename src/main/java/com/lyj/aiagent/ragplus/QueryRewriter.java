@@ -27,6 +27,11 @@ public class QueryRewriter {
     }
 
 
+    /**
+     * 执行查询重写
+     * @param prompt
+     * @return
+     */
     
     public String doQueryRewrite(String prompt) {
         Query query = new Query(prompt);

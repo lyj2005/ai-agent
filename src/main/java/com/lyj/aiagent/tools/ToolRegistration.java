@@ -15,7 +15,11 @@ public class ToolRegistration {
     @Value("${search-api.api-key}")
     private String searchApiKey;
 
+/*
 
+    @Value("${tavily.api-key}")
+    private String tavilyApiKey;
+*/
 
 
     @Bean
@@ -27,6 +31,8 @@ public class ToolRegistration {
         TerminalOperationTool terminalOperationTool = new TerminalOperationTool();
         PDFGenerationTool pdfGenerationTool = new PDFGenerationTool();
         TerminateTool terminateTool = new TerminateTool();
+//        TavilySearchTool tavilySearchTool = new TavilySearchTool(tavilyApiKey);
+
 
         return ToolCallbacks.from(
             fileOperationTool,
@@ -36,6 +42,7 @@ public class ToolRegistration {
             terminalOperationTool,
             pdfGenerationTool,
                 terminateTool
+//                tavilySearchTool
         );
     }
 

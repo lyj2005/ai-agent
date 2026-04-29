@@ -1,4 +1,4 @@
-package com.lyj.aiagent.app;
+package com.lyj.aiagent.agent;
 
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Assertions;
@@ -7,9 +7,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+
 @SpringBootTest
 class ManusTest {
-
 
 
     @Resource

@@ -17,6 +17,10 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
+
+/**
+ * 自定义基于阿里云知识库服务的 RAG 增强顾问
+ */
 @Configuration
 public class LoveAppRagCloudAdvisorConfig {
 

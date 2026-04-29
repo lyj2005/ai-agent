@@ -2,6 +2,9 @@ package com.lyj.aiagent.tools;
 
 import org.springframework.ai.tool.annotation.Tool;
 
+/**
+ * 终止工具（让自主规划智能体能够合理地中断）
+ */
 public class TerminateTool {
   
     @Tool(description = """  

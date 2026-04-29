@@ -13,6 +13,8 @@ import java.io.IOException;
  */
 public class WebScrapingTool {
 
+
+
     /**
      * 抓取指定URL网页的内容
      * @param url 要抓取的网页URL地址
@@ -30,4 +32,7 @@ public class WebScrapingTool {
             return "Error scraping web page: " + e.getMessage();
         }
     }
+
+
+
 }

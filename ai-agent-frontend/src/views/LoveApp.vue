@@ -1,25 +1,41 @@
 <template>
   <div class="love-root">
+    <!-- 背景装饰元素 -->
+    <div class="background-glow"></div>
+    <div class="floating-hearts">
+      <div class="heart" v-for="i in 5" :key="i" :style="{left: (20*i)+'%', animationDelay: (i*0.3)+'s'}">♥</div>
+    </div>
+
     <header class="love-header topbar">
       <div class="left">
         <router-link to="/" class="back">← 返回</router-link>
       </div>
-      <div class="center">AI恋爱大师</div>
-      <div class="right">会话ID：<span class="chatid">{{ chatId }}</span></div>
+      <div class="center">
+        <span class="title-heart">❤</span>
+        恋爱大师
+      </div>
+      <div class="right privacy-indicator">
+        <span class="lock-icon">🔒</span>
+        <span class="private-text">私密对话</span>
+      </div>
     </header>
 
     <main class="chat-panel" ref="logRef">
       <div v-for="m in messages" :key="m.id" :class="['message-row', m.sender]">
-        <div class="avatar" v-if="m.sender==='ai'">💬</div>
-        <div class="bubble">
+        <div class="avatar" v-if="m.sender==='ai'">
+          <span class="avatar-icon">💕</span>
+        </div>
+        <div class="bubble" :class="m.sender + '-bubble'">
           <div class="bubble-text" v-html="m.text"></div>
           <div class="time">{{ m.time }}</div>
         </div>
-        <div class="avatar user-avatar" v-if="m.sender==='user'">😊</div>
+        <div class="avatar user-avatar" v-if="m.sender==='user'">
+          <span class="avatar-icon">�</span>
+        </div>
       </div>
       <div v-if="isStreaming" class="message-row ai streaming">
-        <div class="avatar">💬</div>
-        <div class="bubble">
+        <div class="avatar"><span class="avatar-icon">💕</span></div>
+        <div class="bubble ai-bubble">
           <div class="typing">
             <span></span><span></span><span></span>
           </div>
@@ -29,8 +45,10 @@
 
     <footer class="composer">
       <div class="composer-inner">
-        <input v-model="input" @keyup.enter="send" placeholder="请输入消息..." />
-        <button class="send" @click="send">发送</button>
+        <input v-model="input" @keyup.enter="send" placeholder="倾诉你的故事..." />
+        <button class="send" @click="send">
+          <span class="send-icon">💌</span>
+        </button>
       </div>
     </footer>
   </div>
@@ -65,14 +83,6 @@ export default {
         localStorage.setItem(chatIdKey, v)
       }
       chatId.value = v      
-      // 显示欢迎消息
-      messages.value.push({
-        id: genId(),
-        sender: 'ai',
-        text: '欢迎来到AI恋爱大师，请诉说你的恋爱困惑，我会尽力给予帮助和建议。',
-        html: '欢迎来到AI恋爱大师，请诉说你的恋爱困惑，我会尽力给予帮助和建议。',
-        time: nowTime()
-      })      
       // 显示欢迎消息
       messages.value.push({
         id: genId(),
@@ -164,47 +174,407 @@ export default {
 </script>
 
 <style scoped>
-.root, :root{
-  /* 更强的恋爱色调：粉色渐变 + 柔和卡片 */
-  --bg1: #ff6b93; /* 深粉 */
-  --bg2: #ffd3e6; /* 浅粉 */
-  --card: rgba(255,250,252,0.96);
-  --ai-bubble: #fff;
-  --user-bubble: linear-gradient(135deg,#ffd1e6,#ff7aa0);
+/* ========== 色彩方案 ========== */
+:root {
+  --primary-warm: #d64055;     /* 深玫瑰红 */
+  --primary-light: #f5a7b8;    /* 浅玫瑰 */
+  --accent-gold: #f4b860;      /* 温暖金色 */
+  --accent-purple: #d4a4c8;    /* 紫色调 */
+  --bg-light: #faf6f3;         /* 温暖象牙白 */
+  --text-dark: #3d3d3d;        /* 深灰色 */
 }
-.love-root{
-  display:flex;flex-direction:column;height:100vh;background:linear-gradient(180deg,var(--bg1),var(--bg2));font-family:Segoe UI,Roboto,Arial,sans-serif;color:#222;
+
+/* ========== 根布局 ========== */
+.love-root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: linear-gradient(135deg, #faf6f3 0%, #f5e8e3 50%, #faf6f3 100%);
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--text-dark);
+  position: relative;
+  overflow: hidden;
 }
-.love-header.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:linear-gradient(90deg,#ff6b93,#ff9ab8);color:#fff}
-.love-header .left .back{color:rgba(255,255,255,0.95);text-decoration:none}
-.love-header .center{font-weight:700;font-size:18px}
-.love-header .right{font-size:13px;opacity:0.95}
 
-.chat-panel{flex:1;overflow:auto;padding:20px 18px;display:flex;flex-direction:column;gap:14px;background:linear-gradient(#fff,#fff);}
-.message-row{display:flex;align-items:flex-end;gap:10px}
-.message-row.ai{justify-content:flex-start}
-.message-row.user{justify-content:flex-end}
-.avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.6);box-shadow:0 2px 6px rgba(0,0,0,0.08)}
-.user-avatar{background:linear-gradient(135deg,#fff 0%, #ffeef2 100%)}
-.bubble{max-width:70%;padding:10px 14px;border-radius:12px;background:#f3f4f6;box-shadow:none;position:relative}
-.message-row.user .bubble{background:#2f8dfc;color:#fff;border-radius:12px}
-.bubble-text{white-space:pre-wrap;word-wrap:break-word}
-.time{font-size:11px;color:rgba(0,0,0,0.45);margin-top:8px;text-align:right}
+/* 背景光晕 */
+.background-glow {
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(244, 184, 96, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: glow-shift 8s ease-in-out infinite;
+}
 
-.composer{padding:12px 18px;border-top:1px solid rgba(0,0,0,0.06);background:transparent}
-.composer-inner{max-width:1100px;margin:0 auto;display:flex;gap:10px}
-.composer input{flex:1;padding:12px;border-radius:999px;border:1px solid #eee;outline:none;background:#fff}
-.composer .send{background:linear-gradient(90deg,#ff5f87,#ff9ab8);border:none;color:#fff;padding:10px 18px;border-radius:999px;cursor:pointer;box-shadow:0 8px 18px rgba(255,95,135,0.12)}
+@keyframes glow-shift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(20px, 20px); }
+}
 
-.streaming .bubble{background:rgba(255,255,255,0.95)}
-.typing{display:flex;gap:6px;padding:6px}
-.typing span{display:inline-block;width:8px;height:8px;background:#e6e6e6;border-radius:50%;animation:blink 1s infinite}
-.typing span:nth-child(2){animation-delay:0.15s}
-.typing span:nth-child(3){animation-delay:0.3s}
-@keyframes blink{0%{opacity:0.2;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}100%{opacity:0.2;transform:translateY(0)}}
+/* 浮动爱心 */
+.floating-hearts {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
 
-/* small screens */
-@media (max-width:600px){
-  .bubble{max-width:85%}
+.heart {
+  position: absolute;
+  bottom: -50px;
+  font-size: 24px;
+  opacity: 0.15;
+  animation: float-heart 8s ease-in infinite;
+  color: #d64055;
+}
+
+@keyframes float-heart {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.15;
+  }
+  90% {
+    opacity: 0.15;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(50px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* ========== 顶部栏 ========== */
+.love-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: linear-gradient(90deg, #d64055 0%, #e077a8 50%, #d64055 100%);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(214, 64, 85, 0.2);
+  position: relative;
+  z-index: 10;
+}
+
+.love-header .left .back {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.love-header .left .back:hover {
+  opacity: 0.7;
+}
+
+.love-header .center {
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.title-heart {
+  display: inline-block;
+  animation: heart-beat 1.2s ease-in-out infinite;
+}
+
+@keyframes heart-beat {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.15); }
+  50% { transform: scale(1); }
+}
+
+.privacy-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 6px 12px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.lock-icon {
+  font-size: 14px;
+}
+
+.private-text {
+  letter-spacing: 0.5px;
+}
+
+/* ========== 聊天面板 ========== */
+.chat-panel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: transparent;
+  position: relative;
+  z-index: 5;
+}
+
+.chat-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-panel::-webkit-scrollbar-thumb {
+  background: rgba(214, 64, 85, 0.2);
+  border-radius: 3px;
+}
+
+.chat-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(214, 64, 85, 0.4);
+}
+
+/* 消息行 */
+.message-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  animation: message-enter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes message-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-row.ai {
+  justify-content: flex-start;
+}
+
+.message-row.user {
+  justify-content: flex-end;
+}
+
+/* 头像 */
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s;
+}
+
+.message-row.ai .avatar {
+  background: linear-gradient(135deg, #d64055 0%, #f4b860 100%);
+  box-shadow: 0 4px 12px rgba(214, 64, 85, 0.15);
+}
+
+.user-avatar {
+  background: linear-gradient(135deg, #d4a4c8 0%, #f5a7b8 100%);
+  box-shadow: 0 4px 12px rgba(212, 164, 200, 0.15);
+}
+
+.avatar-icon {
+  font-size: 20px;
+}
+
+/* 消息气泡 */
+.bubble {
+  max-width: 75%;
+  padding: 12px 16px;
+  border-radius: 18px;
+  position: relative;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  line-height: 1.5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s;
+}
+
+.ai-bubble {
+  background: linear-gradient(135deg, #fff8f5, #fef1ed);
+  color: var(--text-dark);
+  border: 1px solid rgba(244, 184, 96, 0.2);
+}
+
+.user-bubble {
+  background: linear-gradient(135deg, #d64055, #eb5c7d);
+  color: #fff;
+  border: none;
+}
+
+.bubble:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.bubble-text {
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.time {
+  font-size: 11px;
+  color: rgba(61, 61, 61, 0.5);
+  text-align: right;
+}
+
+.message-row.user .time {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* 加载动画 */
+.typing {
+  display: flex;
+  gap: 6px;
+  padding: 8px 4px;
+}
+
+.typing span {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: var(--text-dark);
+  border-radius: 50%;
+  animation: blink 1.4s infinite;
+  opacity: 0.4;
+}
+
+.typing span:nth-child(1) { animation-delay: 0s; }
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes blink {
+  0%, 60%, 100% {
+    opacity: 0.4;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-8px);
+  }
+}
+
+/* ========== 消息框 ========== */
+.composer {
+  padding: 16px 18px;
+  border-top: 1px solid rgba(214, 64, 85, 0.1);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 10;
+}
+
+.composer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  gap: 10px;
+}
+
+.composer input {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 24px;
+  border: 1.5px solid rgba(214, 64, 85, 0.2);
+  outline: none;
+  background: #fff;
+  color: var(--text-dark);
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.composer input:focus {
+  border-color: rgba(214, 64, 85, 0.5);
+  box-shadow: 0 0 0 3px rgba(214, 64, 85, 0.1);
+  background: #fff;
+}
+
+.composer input::placeholder {
+  color: rgba(61, 61, 61, 0.4);
+}
+
+.composer .send {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #d64055, #eb5c7d);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 4px 12px rgba(214, 64, 85, 0.2);
+  font-size: 0;
+}
+
+.send-icon {
+  font-size: 18px;
+}
+
+.composer .send:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 18px rgba(214, 64, 85, 0.3);
+}
+
+.composer .send:active {
+  transform: scale(0.95);
+}
+
+/* ========== 响应式 ========== */
+@media (max-width: 768px) {
+  .bubble {
+    max-width: 85%;
+  }
+  
+  .love-header {
+    padding: 10px 12px;
+  }
+
+  .love-header .center {
+    font-size: 16px;
+  }
+
+  .privacy-indicator {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  .chat-panel {
+    padding: 16px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .bubble {
+    max-width: 90%;
+  }
+
+  .heart {
+    font-size: 18px;
+  }
 }
 </style>

@@ -12,6 +12,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * 恋爱助手文档加载器
+ */
 @Component
 @Slf4j
 public class LoveAppDocumentLoader {
@@ -24,6 +28,10 @@ public class LoveAppDocumentLoader {
     }
 
 
+    /**
+     * 加载多篇 Markdown 文档
+     * @return
+     */
     //2. 实现加载文档的方法.负责读取所有 Markdown 文档并转换为 Document 列表
     public List<Document> loadMarkdowns() {
 

@@ -10,23 +10,23 @@ import org.springframework.ai.vectorstore.filter.Filter;
 import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
 
 /**
- * 检索增强器
+ * 创建自定义的 RAG 检索增强顾问的工厂。检索增强器
  */
 @Slf4j
 public class LoveAppRagCustomAdvisorFactory {
 
 
     public static Advisor createLoveAppRagCustomAdvisor(VectorStore vectorStore, String status) {
-        
-        
+
+        // 过滤特定状态的文档
         Filter.Expression expression = new FilterExpressionBuilder()
                 .eq("status", status)
                 .build();
-        
-        
-        /**
-        文档检索器
-        */
+
+
+
+
+        // 创建文档检索器
         DocumentRetriever documentRetriever = VectorStoreDocumentRetriever.builder()
                 .vectorStore(vectorStore)
                 .filterExpression(expression) // 过滤条件

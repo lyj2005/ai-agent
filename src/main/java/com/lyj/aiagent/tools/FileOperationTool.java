@@ -11,10 +11,14 @@ import org.springframework.ai.tool.annotation.ToolParam;
  */
 public class FileOperationTool {
 
+
+
     /**
      * 文件存储目录路径常量
      */
     private final String FILE_DIR = FileConstant.FILE_SAVE_DIR + "/file";
+
+
 
     /**
      * 从文件中读取内容

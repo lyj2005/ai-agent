@@ -76,6 +76,17 @@ public class FileBasedChatMemory implements ChatMemory {
         }
     }
 
+
+
+
+
+
+    /**
+     * 获取或创建会话消息的列表
+     *
+     * @param conversationId
+     * @return
+     */
     private List<Message> getOrCreateConversation(String conversationId) {
         File file = getConversationFile(conversationId);
         List<Message> messages = new ArrayList<>();
@@ -91,6 +102,13 @@ public class FileBasedChatMemory implements ChatMemory {
 
 
 
+
+    /**
+     * 保存会话消息
+     *
+     * @param conversationId
+     * @param messages
+     */
     private void saveConversation(String conversationId, List<Message> messages) {
         File file = getConversationFile(conversationId);
         
@@ -104,7 +122,12 @@ public class FileBasedChatMemory implements ChatMemory {
 
 
 
-    //每一个对话存为文件    
+    /**
+     * 每个会话文件单独保存
+     *
+     * @param conversationId
+     * @return
+     */
     private File getConversationFile(String conversationId) {
         return new File(BASE_DIR, conversationId + ".kryo");
     }

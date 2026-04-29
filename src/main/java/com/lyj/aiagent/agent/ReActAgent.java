@@ -39,11 +39,13 @@ public abstract class ReActAgent extends BaseAgent {
      */  
     @Override  
     public String step() {  
-        try {  
+        try {
+            //先思考
             boolean shouldAct = think();  
             if (!shouldAct) {  
                 return "思考完成 - 无需行动";  
-            }  
+            }
+            //再行动
             return act();  
         } catch (Exception e) {  
             // 记录异常日志  

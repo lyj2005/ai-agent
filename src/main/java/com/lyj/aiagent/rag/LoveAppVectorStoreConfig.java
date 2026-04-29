@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.List;
 
 /**
- * 基于本地的向量数据库
+ *  恋爱助手向量数据库配置（初始化基于内存的向量数据库 Bean）
  */
 
 @Configuration
@@ -21,9 +21,11 @@ public class LoveAppVectorStoreConfig {
     @Resource
     private LoveAppDocumentLoader loveAppDocumentLoader;
 
-    @Resource
+    /*@Resource
     private MyKeywordEnricher myKeywordEnricher;
-    
+*/
+
+
 
     @Bean
     VectorStore loveAppVectorStore(EmbeddingModel dashscopeEmbeddingModel) {
@@ -33,16 +35,18 @@ public class LoveAppVectorStoreConfig {
         SimpleVectorStore simpleVectorStore = SimpleVectorStore.builder(dashscopeEmbeddingModel)
                 .build();
         //2.  加载文档
-        List<Document> documents = loveAppDocumentLoader.loadMarkdowns();
+        // TODO 后续 pgvector 开启即可
+//        List<Document> documents = loveAppDocumentLoader.loadMarkdowns();
         // 自动补充关键词元信息
-        List<Document> enrichedDocuments = myKeywordEnricher.enrichDocuments(documents);
-        simpleVectorStore.add(enrichedDocuments);
+//        List<Document> enrichedDocuments = myKeywordEnricher.enrichDocuments(documents);
         //3. 保存基于内存的数据库
-        simpleVectorStore.add(documents);
+//        simpleVectorStore.add(enrichedDocuments);
+//        simpleVectorStore.add(documents);
         //4. 返回结果
         return simpleVectorStore;
-    
     }
+
+
 
 
 }

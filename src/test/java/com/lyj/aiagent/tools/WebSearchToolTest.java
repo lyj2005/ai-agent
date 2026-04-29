@@ -15,7 +15,7 @@ class WebSearchToolTest {
     @Test
     void searchWeb() {
         WebSearchTool webSearchTool = new WebSearchTool(apiKey);
-        String query = "What is the capital of chongqing?";
+        String query = "上海静安区 约会地点";
         String result = webSearchTool.searchWeb(query);
         System.out.println(result);
 

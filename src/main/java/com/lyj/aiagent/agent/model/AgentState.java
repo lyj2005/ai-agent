@@ -23,5 +23,7 @@ public enum AgentState {
     /**  
      * 错误状态  
      */  
-    ERROR  
+    ERROR
+
+
 }

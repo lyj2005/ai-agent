@@ -12,6 +12,8 @@ import java.io.InputStreamReader;
  */
 public class TerminalOperationTool {
 
+
+
     /**
      * 在终端中执行指定命令并返回执行结果
      * @param command 要在终端中执行的命令
@@ -48,4 +50,7 @@ public class TerminalOperationTool {
         }
         return output.toString();
     }
+
+
+
 }

@@ -18,7 +18,7 @@ import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgIndexT
 /**
  * PGVector向量数据库，特殊情况（ollama和dashScope模型冲突）
  */
-@Configuration
+//@Configuration
 public class PgVectorVectorStoreConfig {
 
 

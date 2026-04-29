@@ -4,7 +4,7 @@ import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.rag.generation.augmentation.ContextualQueryAugmenter;
 
 /**
- * 自定义错误处理器
+ * 创建上下文查询增强器的工厂。自定义错误处理器
  */
 public class LoveAppContextualQueryAugmenterFactory {
     
